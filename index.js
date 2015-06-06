@@ -1,6 +1,7 @@
 var dust
 var fs = require('fs')
 var Path = require('path')
+var PassThrough = require('stream').PassThrough
 
 try {
   dust = require('dustjs-linkedin')
@@ -37,10 +38,20 @@ module.exports = {
           callback(err, data.toString())
         })
       }
-      var compiled = dust.compileFn(template, options && options.name)
+      var compiled = dust.compileFn(template, options && options.filename)
+      var templateName = options.filename
       process.nextTick(function() {
         callback(null, function(context, options, callback) {
-          compiled(context, callback)
+          var dustStream = dust.stream(templateName, context)
+          var stream = new PassThrough()
+
+          dustStream.on('data', function(data) {
+            stream.push(data)
+          })
+          dustStream.on('end', function() {
+            stream.push(null)
+          })
+          callback(null, stream)
         })
       })
     }
