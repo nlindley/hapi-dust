@@ -1,6 +1,4 @@
 var dust
-var fs = require('fs')
-var Path = require('path')
 var PassThrough = require('stream').PassThrough
 
 try {
@@ -31,12 +29,7 @@ module.exports = {
   module: {
     compile: function(template, options, callback) {
       dust.onLoad = function(name, callback) {
-        var templateFile = Path.join(getBaseDir(options), name + getTemplateExt(options))
-        fs.readFile(templateFile, function(err, data) {
-          if (err)
-            throw err
-          callback(err, data.toString())
-        })
+        callback(null, template)
       }
       var compiled = dust.compileFn(template, options && options.filename)
       var templateName = options.filename
